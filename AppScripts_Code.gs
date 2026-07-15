@@ -1,22 +1,44 @@
 /**
- * Read-only API for the Hire Ledger dashboard.
+ * Read-only API for the Hire Ledger dashboard + Payments tracker.
  *
  * This script ONLY reads the sheet and returns it as JSON — there is no
- * write endpoint, on purpose. The dashboard is view-only; the sheet is
+ * write endpoint, on purpose. Both pages are view-only; the sheet is
  * the single place edits happen.
  *
  * SETUP
- * 1. Row 1 of the active sheet must be a header row. Recommended headers,
- *    in any order (matching is case-insensitive and ignores spacing):
+ * 1. Tab 1 (any name, defaults to the first sheet) is the Hire Ledger.
+ *    Recommended headers, in any order (matching is case-insensitive and
+ *    ignores spacing):
  *      Hire Name | Employer | Phone Number | Preferred Payment Method |
- *      Production Cycle | Basic Salary | Commission
- * 2. Deploy -> New deployment -> Web app -> Execute as: Me,
- *    Who has access: Anyone. Copy the /exec URL into the dashboard's
- *    "API URL" box.
+ *      Production Cycle | Basic Salary | Commission | Status
+ *    ("Status" should contain Active / Inactive.)
+ *
+ * 2. Add a second tab named exactly "Payments" with headers:
+ *      Setter Name | Month | Amount | Payment Status
+ *    ("Payment Status" should contain Paid / Pending / Overdue.)
+ *
+ * 3. Deploy -> New deployment -> Web app -> Execute as: Me,
+ *    Who has access: Anyone. Copy the /exec URL into each page's
+ *    "API URL" box (Settings). The Payments page automatically requests
+ *    ?sheet=Payments — you don't need to do anything extra.
  */
 
 function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var requestedSheet = e && e.parameter && e.parameter.sheet;
+
+  var sheet = requestedSheet
+    ? ss.getSheetByName(requestedSheet)
+    : ss.getSheets()[0];
+
+  if (!sheet) {
+    return jsonResponse({
+      rows: [],
+      updatedAt: new Date().toISOString(),
+      error: "Sheet not found: " + requestedSheet
+    });
+  }
+
   var values = sheet.getDataRange().getValues();
 
   if (values.length < 1) {
