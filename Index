@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hire Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12232E;
+    --ink-2:#1B333F;
+    --ink-3:#23404E;
+    --paper:#EDEBE3;
+    --paper-dim:#A9B4B6;
+    --brass:#C9A227;
+    --brass-dim:#8f7420;
+    --slate:#5C6F7A;
+    --ok:#4C9A72;
+    --err:#C1594A;
+    --line: rgba(237,235,227,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 80px;}
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:20px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:24px;
+    margin-bottom:28px;
+  }
+  .brand-mark{
+    width:38px;height:38px;
+    border:1.5px solid var(--brass);
+    border-radius:3px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    color:var(--brass);
+    font-size:18px;
+    flex:none;
+  }
+  .title-block{display:flex;gap:14px;align-items:center;}
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:30px;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--paper);
+  }
+  .subtitle{
+    font-size:13px;
+    color:var(--paper-dim);
+    margin-top:2px;
+    letter-spacing:0.02em;
+  }
+  .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+
+  .status-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:12.5px;
+    padding:7px 12px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    color:var(--paper-dim);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--slate);flex:none;}
+  .status-pill.connected .status-dot{background:var(--ok);}
+  .status-pill.connected{color:var(--ok);border-color:rgba(76,154,114,0.35);}
+  .status-pill.error .status-dot{background:var(--err);}
+  .status-pill.error{color:var(--err);border-color:rgba(193,89,74,0.35);}
+
+  button{
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    border:none;
+    font-size:13px;
+  }
+  .btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--paper);
+    padding:8px 14px;
+    border-radius:6px;
+    font-weight:500;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .btn:hover{border-color:var(--brass-dim);background:var(--ink-2);}
+  .btn svg{width:14px;height:14px;}
+  .btn.spinning svg{animation:spin 0.9s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ---------- settings panel ---------- */
+  .settings{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 20px;
+    margin-bottom:26px;
+    display:none;
+  }
+  .settings.open{display:block;}
+  .settings label{
+    display:block;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--paper-dim);
+    margin-bottom:8px;
+  }
+  .settings-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .settings input[type=text]{
+    flex:1;min-width:260px;
+    background:var(--ink);
+    border:1px solid var(--line);
+    color:var(--paper);
+    padding:10px 12px;
+    border-radius:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+  }
+  .settings input[type=text]:focus{outline:2px solid var(--brass-dim);outline-offset:1px;}
+  .settings .btn-primary{
+    background:var(--brass);
+    color:#1a1503;
+    border-color:var(--brass);
+    font-weight:600;
+  }
+  .settings .btn-primary:hover{background:#dab536;}
+  .settings-note{font-size:12px;color:var(--paper-dim);margin-top:10px;line-height:1.5;}
+  .settings-note strong{color:var(--paper);}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;gap:12px;flex-wrap:wrap;
+  }
+  .search-box{
+    display:flex;align-items:center;gap:8px;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 12px;
+    min-width:240px;
+  }
+  .search-box svg{width:14px;height:14px;color:var(--paper-dim);flex:none;}
+  .search-box input{
+    background:none;border:none;color:var(--paper);
+    font-family:'Inter',sans-serif;font-size:13px;width:100%;
+  }
+  .search-box input:focus{outline:none;}
+  .count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--paper-dim);}
+
+  /* ---------- ledger ---------- */
+  .ledger{display:flex;flex-direction:column;gap:10px;}
+  .entry{
+    position:relative;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-left:3px solid var(--brass-dim);
+    border-radius:8px;
+    padding:18px 22px 18px 26px;
+    display:grid;
+    grid-template-columns:52px 1.4fr 1.1fr 1fr 1fr 1fr;
+    gap:18px;
+    align-items:center;
+  }
+  /* perforation notches on the stub edge */
+  .entry::before, .entry::after{
+    content:"";
+    position:absolute;left:-4px;width:8px;height:8px;
+    border-radius:50%;background:var(--ink);border:1px solid var(--line);
+  }
+  .entry::before{top:-4px;}
+  .entry::after{bottom:-4px;}
+
+  .no{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--brass);
+    font-size:13px;
+    font-weight:600;
+  }
+  .field-label{
+    display:none;
+    font-size:10px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--paper-dim);margin-bottom:3px;
+  }
+  .name{font-family:'Fraunces',serif;font-weight:600;font-size:16.5px;}
+  .employer{font-size:13.5px;color:var(--paper-dim);}
+  .phone,.salary{font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .payment{font-size:13px;}
+
+  .cycle-badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    padding:4px 9px;
+    border-radius:4px;
+    border:1px solid var(--line);
+    color:var(--paper-dim);
+    letter-spacing:.02em;
+    text-transform:capitalize;
+    white-space:nowrap;
+  }
+  .cycle-weekly{color:#7FB0D9;border-color:rgba(127,176,217,0.35);}
+  .cycle-biweekly, .cycle-bi-weekly{color:#C79FE0;border-color:rgba(199,159,224,0.35);}
+  .cycle-monthly{color:var(--brass);border-color:rgba(201,162,39,0.35);}
+  .cycle-project, .cycle-project-based{color:#7FCBA4;border-color:rgba(127,203,164,0.35);}
+
+  .commission{font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .commission.open{
+    color:var(--paper-dim);
+    font-style:italic;
+    border:1px dashed var(--line);
+    padding:3px 8px;
+    border-radius:4px;
+    display:inline-block;
+    font-size:11.5px;
+  }
+
+  .col-header{
+    display:grid;
+    grid-template-columns:52px 1.4fr 1.1fr 1fr 1fr 1fr;
+    gap:18px;
+    padding:0 22px 0 26px;
+    margin-bottom:6px;
+  }
+  .col-header span{
+    font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--paper-dim);font-weight:500;
+  }
+
+  /* ---------- states ---------- */
+  .empty-state, .loading-state, .error-state{
+    text-align:center;
+    padding:60px 20px;
+    border:1px dashed var(--line);
+    border-radius:10px;
+    color:var(--paper-dim);
+  }
+  .empty-state h3, .error-state h3{
+    font-family:'Fraunces',serif;color:var(--paper);
+    font-size:19px;font-weight:600;margin:0 0 8px;
+  }
+  .error-state h3{color:var(--err);}
+  .empty-state p, .error-state p{font-size:13.5px;margin:0;line-height:1.6;}
+
+  footer{
+    margin-top:40px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--paper-dim);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+  footer strong{color:var(--paper);}
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 860px){
+    .col-header{display:none;}
+    .entry{
+      grid-template-columns:1fr;
+      gap:8px;
+      padding:18px 18px 18px 22px;
+    }
+    .field-label{display:block;}
+    .no{position:absolute;top:16px;right:20px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title-block">
+      <div class="brand-mark">H</div>
+      <div>
+        <h1>Hire Ledger</h1>
+        <div class="subtitle">Every placement, on record — view only</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="status-pill" id="statusPill"><span class="status-dot"></span><span id="statusText">Not connected</span></span>
+      <button class="btn" id="refreshBtn" title="Refresh from sheet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
+        Refresh
+      </button>
+      <button class="btn" id="settingsBtn" title="Connection settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.13.47.4.89.76 1.21.36.32.6.75.7 1.22"/></svg>
+        Settings
+      </button>
+    </div>
+  </header>
+
+  <div class="settings" id="settingsPanel">
+    <label for="apiUrlInput">Apps Script API URL (ends in /exec)</label>
+    <div class="settings-row">
+      <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec">
+      <button class="btn btn-primary" id="saveUrlBtn">Save & connect</button>
+    </div>
+    <div class="settings-note">
+      This dashboard is <strong>read-only</strong>. The only way to add, edit, or remove a hire is directly
+      in the Google Sheet — refresh here afterward to see the update.
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search by name or employer…">
+    </div>
+    <span class="count" id="countLabel"></span>
+  </div>
+
+  <div class="col-header">
+    <span>No.</span>
+    <span>Hire / Employer</span>
+    <span>Phone</span>
+    <span>Payment</span>
+    <span>Cycle</span>
+    <span>Salary / Commission</span>
+  </div>
+
+  <div class="ledger" id="ledger">
+    <div class="empty-state">
+      <h3>No sheet connected yet</h3>
+      <p>Click <strong>Settings</strong> above and paste in your Apps Script API URL to load hires.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>Source of truth: <strong>Google Sheet</strong> — edits there sync here on refresh.</span>
+    <span id="lastSynced"></span>
+  </footer>
+
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let allRows = [];
+  let apiUrl = "";
+
+  try {
+    apiUrl = localStorage.getItem("hireLedgerApiUrl") || "";
+  } catch (e) { /* storage unavailable in this preview; fine once deployed */ }
+
+  if (apiUrl) $("apiUrlInput").value = apiUrl;
+
+  $("settingsBtn").addEventListener("click", () => {
+    $("settingsPanel").classList.toggle("open");
+  });
+
+  $("saveUrlBtn").addEventListener("click", () => {
+    const val = $("apiUrlInput").value.trim();
+    if (!val) return;
+    apiUrl = val;
+    try { localStorage.setItem("hireLedgerApiUrl", val); } catch (e) {}
+    $("settingsPanel").classList.remove("open");
+    loadData();
+  });
+
+  $("refreshBtn").addEventListener("click", loadData);
+  $("searchInput").addEventListener("input", render);
+
+  function setStatus(state, text) {
+    const pill = $("statusPill");
+    pill.className = "status-pill" + (state ? " " + state : "");
+    $("statusText").textContent = text;
+  }
+
+  function normalizeKey(k) {
+    return String(k).toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function pick(record, candidates) {
+    const map = {};
+    Object.keys(record).forEach((k) => (map[normalizeKey(k)] = record[k]));
+    for (const c of candidates) {
+      const nk = normalizeKey(c);
+      if (map[nk] !== undefined && map[nk] !== "") return map[nk];
+    }
+    return "";
+  }
+
+  function formatSalary(v) {
+    if (v === "" || v === null || v === undefined) return "—";
+    const n = Number(v);
+    if (isNaN(n)) return String(v);
+    return "$" + n.toLocaleString();
+  }
+
+  function cycleClass(cycle) {
+    const k = normalizeKey(cycle);
+    if (k.includes("week") && !k.includes("bi")) return "cycle-weekly";
+    if (k.includes("biweek")) return "cycle-biweekly";
+    if (k.includes("month")) return "cycle-monthly";
+    if (k.includes("project")) return "cycle-project";
+    return "";
+  }
+
+  async function loadData() {
+    if (!apiUrl) {
+      setStatus("", "Not connected");
+      return;
+    }
+    setStatus("", "Syncing…");
+    $("refreshBtn").classList.add("spinning");
+    try {
+      const res = await fetch(apiUrl);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      allRows = Array.isArray(data.rows) ? data.rows : [];
+      setStatus("connected", "Connected — synced with Google Sheets");
+      const ts = data.updatedAt ? new Date(data.updatedAt) : new Date();
+      $("lastSynced").textContent = "Last synced " + ts.toLocaleString();
+      render();
+    } catch (err) {
+      setStatus("error", "Connection failed");
+      $("ledger").innerHTML = `
+        <div class="error-state">
+          <h3>Couldn't reach the sheet</h3>
+          <p>Double-check the API URL in Settings, and that the Apps Script deployment access is set to "Anyone."<br>
+          (${(err && err.message) || "unknown error"})</p>
+        </div>`;
+    } finally {
+      $("refreshBtn").classList.remove("spinning");
+    }
+  }
+
+  function render() {
+    const q = $("searchInput").value.trim().toLowerCase();
+    const rows = allRows.filter((r) => {
+      if (!q) return true;
+      const name = String(pick(r, ["Hire Name", "Name"])).toLowerCase();
+      const employer = String(pick(r, ["Employer", "Company"])).toLowerCase();
+      return name.includes(q) || employer.includes(q);
+    });
+
+    $("countLabel").textContent = rows.length
+      ? rows.length + (rows.length === 1 ? " hire" : " hires")
+      : "";
+
+    const ledger = $("ledger");
+
+    if (!allRows.length) {
+      ledger.innerHTML = `
+        <div class="empty-state">
+          <h3>Sheet connected — no hires yet</h3>
+          <p>Once rows are added to the Google Sheet, they'll show up here after a refresh.</p>
+        </div>`;
+      return;
+    }
+
+    if (!rows.length) {
+      ledger.innerHTML = `
+        <div class="empty-state">
+          <h3>No matches</h3>
+          <p>Try a different name or employer.</p>
+        </div>`;
+      return;
+    }
+
+    ledger.innerHTML = rows
+      .map((r, i) => {
+        const name = pick(r, ["Hire Name", "Name"]) || "—";
+        const employer = pick(r, ["Employer", "Company"]) || "—";
+        const phone = pick(r, ["Phone Number", "Phone"]) || "—";
+        const payment = pick(r, ["Preferred Payment Method", "Preferred Payment", "Payment Method"]) || "—";
+        const cycle = pick(r, ["Production Cycle", "Cycle"]) || "—";
+        const salary = pick(r, ["Basic Salary", "Salary"]);
+        const commission = pick(r, ["Commission", "Commission Rate"]);
+
+        return `
+        <div class="entry">
+          <span class="no">${String(i + 1).padStart(3, "0")}</span>
+          <div>
+            <div class="field-label">Hire / Employer</div>
+            <div class="name">${escapeHtml(name)}</div>
+            <div class="employer">${escapeHtml(employer)}</div>
+          </div>
+          <div>
+            <div class="field-label">Phone</div>
+            <span class="phone">${escapeHtml(phone)}</span>
+          </div>
+          <div>
+            <div class="field-label">Payment</div>
+            <span class="payment">${escapeHtml(payment)}</span>
+          </div>
+          <div>
+            <div class="field-label">Cycle</div>
+            <span class="cycle-badge ${cycleClass(cycle)}">${escapeHtml(cycle)}</span>
+          </div>
+          <div>
+            <div class="field-label">Salary / Commission</div>
+            <div class="salary">${formatSalary(salary)}</div>
+            ${
+              commission === "" || commission === undefined
+                ? `<span class="commission open">open</span>`
+                : `<span class="commission">${escapeHtml(commission)}</span>`
+            }
+          </div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  if (apiUrl) loadData();
+</script>
+</body>
+</html>
