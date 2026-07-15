@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payments — Hire Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12232E;
+    --ink-2:#1B333F;
+    --ink-3:#23404E;
+    --paper:#EDEBE3;
+    --paper-dim:#98A5A8;
+    --brass:#C9A227;
+    --brass-dim:#8f7420;
+    --slate:#5C6F7A;
+    --ok:#4C9A72;
+    --warn:#D9A441;
+    --err:#C1594A;
+    --line: rgba(237,235,227,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    background-image: radial-gradient(circle at 15% 0%, rgba(201,162,39,0.05), transparent 45%);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 22px 70px;}
+
+  .top-nav{
+    display:flex;gap:4px;margin-bottom:22px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:4px;
+    width:max-content;
+    background:var(--ink-2);
+  }
+  .top-nav a{
+    text-decoration:none;
+    font-size:12px;
+    font-weight:500;
+    color:var(--paper-dim);
+    padding:7px 14px;
+    border-radius:6px;
+    transition:background .15s ease,color .15s ease;
+    font-family:'Inter',sans-serif;
+  }
+  .top-nav a.active{background:var(--ink-3);color:var(--brass);}
+  .top-nav a:hover:not(.active){color:var(--paper);}
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:16px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:20px;
+    margin-bottom:22px;
+  }
+  .brand-mark{
+    width:32px;height:32px;
+    border:1.5px solid var(--brass);
+    border-radius:3px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    color:var(--brass);
+    font-size:15px;
+    flex:none;
+  }
+  .title-block{display:flex;gap:12px;align-items:center;}
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:23px;
+    letter-spacing:-0.01em;
+    margin:0;
+    color:var(--paper);
+  }
+  .subtitle{
+    font-size:11.5px;
+    color:var(--paper-dim);
+    margin-top:1px;
+    letter-spacing:0.02em;
+  }
+  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+  .status-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;
+    padding:6px 11px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    color:var(--paper-dim);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--slate);flex:none;}
+  .status-pill.connected .status-dot{background:var(--ok);}
+  .status-pill.connected{color:var(--ok);border-color:rgba(76,154,114,0.3);}
+  .status-pill.error .status-dot{background:var(--err);}
+  .status-pill.error{color:var(--err);border-color:rgba(193,89,74,0.3);}
+
+  button{
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    border:none;
+    font-size:12px;
+  }
+  .btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--paper);
+    padding:7px 12px;
+    border-radius:6px;
+    font-weight:500;
+    display:inline-flex;align-items:center;gap:5px;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .btn:hover{border-color:var(--brass-dim);background:var(--ink-2);}
+  .btn svg{width:13px;height:13px;}
+  .btn.spinning svg{animation:spin 0.9s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .settings{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:22px;
+    display:none;
+  }
+  .settings.open{display:block;}
+  .settings label{
+    display:block;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--paper-dim);
+    margin-bottom:7px;
+  }
+  .settings-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .settings input[type=text]{
+    flex:1;min-width:260px;
+    background:var(--ink);
+    border:1px solid var(--line);
+    color:var(--paper);
+    padding:9px 11px;
+    border-radius:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+  }
+  .settings input[type=text]:focus{outline:2px solid var(--brass-dim);outline-offset:1px;}
+  .settings .btn-primary{
+    background:var(--brass);
+    color:#1a1503;
+    border-color:var(--brass);
+    font-weight:600;
+  }
+  .settings .btn-primary:hover{background:#dab536;}
+  .settings-note{font-size:11px;color:var(--paper-dim);margin-top:9px;line-height:1.55;}
+  .settings-note strong{color:var(--paper);}
+
+  /* ---------- summary strip ---------- */
+  .summary{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .summary-card{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:13px 15px;
+  }
+  .summary-card .label{
+    font-size:10px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--paper-dim);margin-bottom:6px;
+  }
+  .summary-card .value{
+    font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:var(--paper);
+  }
+  .summary-card.paid .value{color:var(--ok);}
+  .summary-card.pending .value{color:var(--warn);}
+  .summary-card.overdue .value{color:var(--err);}
+
+  .toolbar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:14px;gap:12px;flex-wrap:wrap;
+  }
+  .search-box{
+    display:flex;align-items:center;gap:8px;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:7px 11px;
+    min-width:230px;
+  }
+  .search-box svg{width:13px;height:13px;color:var(--paper-dim);flex:none;}
+  .search-box input{
+    background:none;border:none;color:var(--paper);
+    font-family:'Inter',sans-serif;font-size:12px;width:100%;
+  }
+  .search-box input:focus{outline:none;}
+  .filter-select{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    color:var(--paper);
+    padding:8px 11px;
+    border-radius:8px;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+  }
+  .count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--paper-dim);}
+
+  .ledger{display:flex;flex-direction:column;gap:7px;}
+  .entry{
+    position:relative;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-left:3px solid var(--brass-dim);
+    border-radius:7px;
+    padding:13px 18px 13px 22px;
+    display:grid;
+    grid-template-columns:38px 1.5fr 1fr 1fr 0.9fr;
+    gap:14px;
+    align-items:center;
+    transition:background .15s ease, border-color .15s ease;
+    box-shadow:0 1px 2px rgba(0,0,0,0.15);
+  }
+  .entry:hover{background:var(--ink-3);border-color:rgba(201,162,39,0.18);}
+  .entry.is-paid{border-left-color:var(--ok);}
+  .entry.is-pending{border-left-color:var(--warn);}
+  .entry.is-overdue{border-left-color:var(--err);}
+
+  .entry::before, .entry::after{
+    content:"";
+    position:absolute;left:-4px;width:7px;height:7px;
+    border-radius:50%;background:var(--ink);border:1px solid var(--line);
+  }
+  .entry::before{top:-4px;}
+  .entry::after{bottom:-4px;}
+
+  .no{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--brass);
+    font-size:11.5px;
+    font-weight:600;
+  }
+  .field-label{
+    display:none;
+    font-size:9px;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--paper-dim);margin-bottom:3px;
+  }
+  .setter-name{font-family:'Fraunces',serif;font-weight:600;font-size:14px;}
+  .month{font-size:12px;color:var(--paper-dim);}
+  .amount{font-family:'IBM Plex Mono',monospace;font-size:13px;}
+
+  .pay-status{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:10.5px;
+    padding:4px 9px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    letter-spacing:.02em;
+    white-space:nowrap;
+  }
+  .pay-status .dot{width:5px;height:5px;border-radius:50%;flex:none;}
+  .pay-status.st-paid{color:var(--ok);border-color:rgba(76,154,114,0.3);}
+  .pay-status.st-paid .dot{background:var(--ok);}
+  .pay-status.st-pending{color:var(--warn);border-color:rgba(217,164,65,0.3);}
+  .pay-status.st-pending .dot{background:var(--warn);}
+  .pay-status.st-overdue{color:var(--err);border-color:rgba(193,89,74,0.3);}
+  .pay-status.st-overdue .dot{background:var(--err);}
+
+  .col-header{
+    display:grid;
+    grid-template-columns:38px 1.5fr 1fr 1fr 0.9fr;
+    gap:14px;
+    padding:0 18px 0 22px;
+    margin-bottom:6px;
+  }
+  .col-header span{
+    font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--paper-dim);font-weight:500;
+  }
+
+  .empty-state, .loading-state, .error-state{
+    text-align:center;
+    padding:52px 20px;
+    border:1px dashed var(--line);
+    border-radius:10px;
+    color:var(--paper-dim);
+  }
+  .empty-state h3, .error-state h3{
+    font-family:'Fraunces',serif;color:var(--paper);
+    font-size:16.5px;font-weight:600;margin:0 0 7px;
+  }
+  .error-state h3{color:var(--err);}
+  .empty-state p, .error-state p{font-size:12px;margin:0;line-height:1.6;}
+
+  footer{
+    margin-top:36px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+    font-size:11px;
+    color:var(--paper-dim);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+  footer strong{color:var(--paper);}
+
+  @media (max-width: 860px){
+    .summary{grid-template-columns:repeat(2,1fr);}
+    .col-header{display:none;}
+    .entry{
+      grid-template-columns:1fr;
+      gap:7px;
+      padding:16px 16px 16px 20px;
+    }
+    .field-label{display:block;}
+    .no{position:absolute;top:14px;right:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="top-nav">
+    <a href="index.html">Hires</a>
+    <a href="payments.html" class="active">Payments</a>
+  </nav>
+
+  <header>
+    <div class="title-block">
+      <div class="brand-mark">H</div>
+      <div>
+        <h1>Monthly Payments</h1>
+        <div class="subtitle">Setter payment tracker — view only</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="status-pill" id="statusPill"><span class="status-dot"></span><span id="statusText">Not connected</span></span>
+      <button class="btn" id="refreshBtn" title="Refresh from sheet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
+        Refresh
+      </button>
+      <button class="btn" id="settingsBtn" title="Connection settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.13.47.4.89.76 1.21.36.32.6.75.7 1.22"/></svg>
+        Settings
+      </button>
+    </div>
+  </header>
+
+  <div class="settings" id="settingsPanel">
+    <label for="apiUrlInput">Apps Script API URL (ends in /exec)</label>
+    <div class="settings-row">
+      <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec">
+      <button class="btn btn-primary" id="saveUrlBtn">Save & connect</button>
+    </div>
+    <div class="settings-note">
+      This page reads the <strong>Payments</strong> tab of the same Google Sheet (columns: Setter Name, Month, Amount,
+      Payment Status). It's <strong>read-only</strong> — log or update payments directly in the Sheet, then refresh here.
+      Connection is shared with the Hires page.
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-card">
+      <div class="label">Total tracked</div>
+      <div class="value" id="sumTotal">—</div>
+    </div>
+    <div class="summary-card paid">
+      <div class="label">Paid this view</div>
+      <div class="value" id="sumPaid">—</div>
+    </div>
+    <div class="summary-card pending">
+      <div class="label">Pending</div>
+      <div class="value" id="sumPending">—</div>
+    </div>
+    <div class="summary-card overdue">
+      <div class="label">Overdue</div>
+      <div class="value" id="sumOverdue">—</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search by setter or month…">
+    </div>
+    <select class="filter-select" id="statusFilter">
+      <option value="">All statuses</option>
+      <option value="paid">Paid</option>
+      <option value="pending">Pending</option>
+      <option value="overdue">Overdue</option>
+    </select>
+    <span class="count" id="countLabel"></span>
+  </div>
+
+  <div class="col-header">
+    <span>No.</span>
+    <span>Setter</span>
+    <span>Month</span>
+    <span>Amount</span>
+    <span>Status</span>
+  </div>
+
+  <div class="ledger" id="ledger">
+    <div class="empty-state">
+      <h3>No sheet connected yet</h3>
+      <p>Click <strong>Settings</strong> above and paste in your Apps Script API URL to load payments.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>Source of truth: <strong>Google Sheet (Payments tab)</strong> — edits there sync here on refresh.</span>
+    <span id="lastSynced"></span>
+  </footer>
+
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let allRows = [];
+  let apiUrl = "";
+
+  try {
+    apiUrl = localStorage.getItem("hireLedgerApiUrl") || "";
+  } catch (e) {}
+
+  if (apiUrl) $("apiUrlInput").value = apiUrl;
+
+  $("settingsBtn").addEventListener("click", () => {
+    $("settingsPanel").classList.toggle("open");
+  });
+
+  $("saveUrlBtn").addEventListener("click", () => {
+    const val = $("apiUrlInput").value.trim();
+    if (!val) return;
+    apiUrl = val;
+    try { localStorage.setItem("hireLedgerApiUrl", val); } catch (e) {}
+    $("settingsPanel").classList.remove("open");
+    loadData();
+  });
+
+  $("refreshBtn").addEventListener("click", loadData);
+  $("searchInput").addEventListener("input", render);
+  $("statusFilter").addEventListener("change", render);
+
+  function setStatus(state, text) {
+    const pill = $("statusPill");
+    pill.className = "status-pill" + (state ? " " + state : "");
+    $("statusText").textContent = text;
+  }
+
+  function normalizeKey(k) {
+    return String(k).toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function pick(record, candidates) {
+    const map = {};
+    Object.keys(record).forEach((k) => (map[normalizeKey(k)] = record[k]));
+    for (const c of candidates) {
+      const nk = normalizeKey(c);
+      if (map[nk] !== undefined && map[nk] !== "") return map[nk];
+    }
+    return "";
+  }
+
+  function formatAmount(v) {
+    if (v === "" || v === null || v === undefined) return "—";
+    const n = Number(v);
+    if (isNaN(n)) return String(v);
+    return "$" + n.toLocaleString();
+  }
+
+  function payStatusInfo(raw) {
+    const k = normalizeKey(raw);
+    if (k.indexOf("overdue") > -1 || k.indexOf("late") > -1) return { key: "overdue", label: "Overdue", cls: "st-overdue" };
+    if (k.indexOf("pending") > -1 || k.indexOf("due") > -1 || k.indexOf("unpaid") > -1) return { key: "pending", label: "Pending", cls: "st-pending" };
+    if (k.indexOf("paid") > -1 || k === "yes" || k === "true") return { key: "paid", label: "Paid", cls: "st-paid" };
+    return { key: "", label: raw ? String(raw) : "—", cls: "" };
+  }
+
+  async function loadData() {
+    if (!apiUrl) {
+      setStatus("", "Not connected");
+      return;
+    }
+    setStatus("", "Syncing…");
+    $("refreshBtn").classList.add("spinning");
+    try {
+      const url = apiUrl + (apiUrl.indexOf("?") > -1 ? "&" : "?") + "sheet=Payments";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      allRows = Array.isArray(data.rows) ? data.rows : [];
+      setStatus("connected", "Connected — synced with Google Sheets");
+      const ts = data.updatedAt ? new Date(data.updatedAt) : new Date();
+      $("lastSynced").textContent = "Last synced " + ts.toLocaleString();
+      render();
+    } catch (err) {
+      setStatus("error", "Connection failed");
+      $("ledger").innerHTML = `
+        <div class="error-state">
+          <h3>Couldn't reach the sheet</h3>
+          <p>Make sure a tab named <strong>Payments</strong> exists in your spreadsheet, with a header row, and that
+          the Apps Script deployment access is set to "Anyone."<br>
+          (${(err && err.message) || "unknown error"})</p>
+        </div>`;
+    } finally {
+      $("refreshBtn").classList.remove("spinning");
+    }
+  }
+
+  function render() {
+    const q = $("searchInput").value.trim().toLowerCase();
+    const statusFilter = $("statusFilter").value;
+
+    const rows = allRows.filter((r) => {
+      const setter = String(pick(r, ["Setter Name", "Setter", "Name"])).toLowerCase();
+      const month = String(pick(r, ["Month"])).toLowerCase();
+      const matchesQ = !q || setter.includes(q) || month.includes(q);
+      if (!matchesQ) return false;
+      if (statusFilter) {
+        const st = payStatusInfo(pick(r, ["Payment Status", "Status"]));
+        if (st.key !== statusFilter) return false;
+      }
+      return true;
+    });
+
+    $("countLabel").textContent = rows.length
+      ? rows.length + (rows.length === 1 ? " record" : " records")
+      : "";
+
+    updateSummary();
+
+    const ledger = $("ledger");
+
+    if (!allRows.length) {
+      ledger.innerHTML = `
+        <div class="empty-state">
+          <h3>Sheet connected — no payments logged yet</h3>
+          <p>Once rows are added to the Payments tab, they'll show up here after a refresh.</p>
+        </div>`;
+      return;
+    }
+
+    if (!rows.length) {
+      ledger.innerHTML = `
+        <div class="empty-state">
+          <h3>No matches</h3>
+          <p>Try a different setter, month, or status filter.</p>
+        </div>`;
+      return;
+    }
+
+    ledger.innerHTML = rows
+      .map((r, i) => {
+        const setter = pick(r, ["Setter Name", "Setter", "Name"]) || "—";
+        const month = pick(r, ["Month"]) || "—";
+        const amount = pick(r, ["Amount", "Amount Paid"]);
+        const st = payStatusInfo(pick(r, ["Payment Status", "Status"]));
+
+        return `
+        <div class="entry ${st.key ? 'is-' + st.key : ''}">
+          <span class="no">${String(i + 1).padStart(3, "0")}</span>
+          <div>
+            <div class="field-label">Setter</div>
+            <div class="setter-name">${escapeHtml(setter)}</div>
+          </div>
+          <div>
+            <div class="field-label">Month</div>
+            <span class="month">${escapeHtml(month)}</span>
+          </div>
+          <div>
+            <div class="field-label">Amount</div>
+            <span class="amount">${formatAmount(amount)}</span>
+          </div>
+          <div>
+            <div class="field-label">Status</div>
+            <span class="pay-status ${st.cls}"><span class="dot"></span>${escapeHtml(st.label)}</span>
+          </div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  function updateSummary() {
+    let total = 0, paid = 0, pending = 0, overdue = 0;
+    allRows.forEach((r) => {
+      const amt = Number(pick(r, ["Amount", "Amount Paid"])) || 0;
+      const st = payStatusInfo(pick(r, ["Payment Status", "Status"]));
+      total += amt;
+      if (st.key === "paid") paid += amt;
+      else if (st.key === "pending") pending += amt;
+      else if (st.key === "overdue") overdue += amt;
+    });
+    $("sumTotal").textContent = allRows.length ? "$" + total.toLocaleString() : "—";
+    $("sumPaid").textContent = allRows.length ? "$" + paid.toLocaleString() : "—";
+    $("sumPending").textContent = allRows.length ? "$" + pending.toLocaleString() : "—";
+    $("sumOverdue").textContent = allRows.length ? "$" + overdue.toLocaleString() : "—";
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  if (apiUrl) loadData();
+</script>
+</body>
+</html>
