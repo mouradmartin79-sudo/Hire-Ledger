@@ -1,55 +1,81 @@
 /**
- * Read-only API for the Hire Ledger dashboard + Payments tracker.
+ * Read-only API for the Scale Setters dashboard.
  *
- * This script ONLY reads the sheet and returns it as JSON — there is no
- * write endpoint, on purpose. Both pages are view-only; the sheet is
- * the single place edits happen.
+ * This script ONLY reads sheets and returns them as JSON — there is no
+ * write endpoint, on purpose. The dashboard is view-only; the spreadsheet
+ * is the single place edits happen.
  *
  * SETUP
- * 1. Tab 1 (any name, defaults to the first sheet) is the Hire Ledger.
- *    Recommended headers, in any order (matching is case-insensitive and
- *    ignores spacing):
- *      Hire Name | Employer | Phone Number | Preferred Payment Method |
- *      Production Cycle | Basic Salary | Commission | Status
- *    ("Status" should contain Active / Inactive.)
+ * Your spreadsheet should have these tabs, named exactly:
  *
- * 2. Add a second tab named exactly "Payments" with headers:
- *      Setter Name | Month | Amount | Payment Status
- *    ("Payment Status" should contain Paid / Pending / Overdue.)
+ *   "Hires" — one row per setter. Header row (row 1), any order:
+ *     Hire Name | Employer | Phone Number | Preferred Payment Method |
+ *     Production Cycle | Basic Salary | Commission | Active
+ *   ("Active" accepts Yes/No, TRUE/FALSE, or Active/Inactive.)
  *
- * 3. Deploy -> New deployment -> Web app -> Execute as: Me,
- *    Who has access: Anyone. Copy the /exec URL into each page's
- *    "API URL" box (Settings). The Payments page automatically requests
- *    ?sheet=Payments — you don't need to do anything extra.
+ *   One tab per month — named exactly "January", "February", ... "December".
+ *   Each setter appears ONCE per month tab (no repeated rows). Header row:
+ *     Setter Name | Amount | Status
+ *   (Setter Name should match the name used in the Hires tab. Status is
+ *   "Paid" or "Pending".)
+ *
+ *   Only create the month tabs you're actually using — any missing ones
+ *   are simply skipped, nothing breaks.
+ *
+ * DEPLOY
+ * Deploy -> New deployment -> Web app -> Execute as: Me,
+ * Who has access: Anyone. Copy the /exec URL into the dashboard's
+ * Settings panel (password-protected on the site).
+ *
+ * If you edit this script later, use Deploy -> Manage deployments ->
+ * Edit -> New version (not "New deployment") so the URL stays the same.
  */
+
+var MONTH_TABS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
 function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var requestedSheet = e && e.parameter && e.parameter.sheet;
 
-  var sheet = requestedSheet
-    ? ss.getSheetByName(requestedSheet)
-    : ss.getSheets()[0];
+  var hiresSheet = ss.getSheetByName("Hires") || ss.getSheets()[0];
+  var hires = sheetToRecords(hiresSheet);
 
-  if (!sheet) {
-    return jsonResponse({
-      rows: [],
-      updatedAt: new Date().toISOString(),
-      error: "Sheet not found: " + requestedSheet
+  var payments = [];
+  MONTH_TABS.forEach(function (monthName) {
+    var sheet = ss.getSheetByName(monthName);
+    if (!sheet) return;
+    var records = sheetToRecords(sheet);
+    records.forEach(function (r) {
+      r.Month = monthName;
+      payments.push(r);
     });
+  });
+
+  // Backward compatibility: still read a "Payments" tab if someone kept one
+  var legacySheet = ss.getSheetByName("Payments");
+  if (legacySheet) {
+    payments = payments.concat(sheetToRecords(legacySheet));
   }
 
+  return jsonResponse({
+    hires: hires,
+    payments: payments,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+function sheetToRecords(sheet) {
+  if (!sheet) return [];
   var values = sheet.getDataRange().getValues();
-
-  if (values.length < 1) {
-    return jsonResponse({ rows: [], updatedAt: new Date().toISOString() });
-  }
+  if (values.length < 1) return [];
 
   var headers = values[0].map(function (h) {
     return String(h).trim();
   });
 
-  var rows = [];
+  var records = [];
   for (var i = 1; i < values.length; i++) {
     var row = values[i];
     var isBlank = row.every(function (cell) {
@@ -60,12 +86,15 @@ function doGet(e) {
     var record = {};
     for (var c = 0; c < headers.length; c++) {
       if (!headers[c]) continue;
-      record[headers[c]] = row[c];
+      var val = row[c];
+      if (Object.prototype.toString.call(val) === "[object Date]") {
+        val = Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd");
+      }
+      record[headers[c]] = val;
     }
-    rows.push(record);
+    records.push(record);
   }
-
-  return jsonResponse({ rows: rows, updatedAt: new Date().toISOString() });
+  return records;
 }
 
 function jsonResponse(obj) {
